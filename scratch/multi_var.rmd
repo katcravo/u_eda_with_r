@@ -1,0 +1,198 @@
+---
+title: "multi_var.rmd"
+author: "Kathleen Cravotta"
+date: "November 25, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+rkdown document. 
+```{r pseudo facebook}
+setwd("C:/Users/Kathleen/Documents/udacity/R")
+pf <- read.csv("pseudo_facebook.tsv", sep = '\t')
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+```
+
+
+
+```{r}
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point()
+```
+```{r}
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_jitter(alpha = 1/20) +
+  xlim (13, 90)
+```
+```{r}
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point(alpha = 1/20) +
+  xlim (13, 90) +
+  coord_trans(y="sqrt")
+```
+```{r}
+ggplot(aes(x = age, y = friend_count), data = pf) + 
+  geom_point(alpha = 1/20, position=position_jitter(h=0)) +
+  xlim (13, 90) +
+  coord_trans(y="sqrt")
+```
+
+```{r}
+ggplot(aes(x = age, y = friendships_initiated), data = pf)  + 
+  geom_point(alpha = 1/20, position=position_jitter(h=0)) +
+  xlim (13, 90) +
+  coord_trans(y="sqrt")
+```
+
+```{r}
+age_groups <- group_by(pf,age)
+
+pf.fc_by_age <- summarise(age_groups, 
+          friend_count_mean = mean(friend_count),
+          friend_count_median = median(friend_count),
+          n = n())
+
+pf.fc_by_age <- arrange(pf.fc_by_age, age)
+```
+
+```{r}
+ggplot(aes(x = age, y = friend_count_mean), data = pf.fc_by_age) + 
+  geom_line()+
+  xlim (13, 90)
+```
+
+```{r}
+ggplot(aes(x = age, y = friendships_initiated), data = pf)  + 
+  geom_point(alpha = 1/20, position=position_jitter(h=0), color = 'orange') +
+  xlim (13, 90) +
+  coord_trans(y="sqrt")+
+  geom_line(stat="summary", fun.y=mean)+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.1), linetype=2, color="blue")+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.9), linetype=2, color="blue")+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.5), color="blue")
+```
+```{r}
+ggplot(aes(x = age, y = friend_count), data = pf) +
+  coord_cartesian(ylim = c(0, 1000), xlim = c(13,70)) + 
+  geom_point(alpha = 1/20, position=position_jitter(h=0), color = 'orange') +
+  geom_line(stat="summary", fun.y=mean)+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.1), linetype=2, color="blue")+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.9), linetype=2, color="blue")+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.5), color="blue")
+```
+
+
+```{r}
+cor.test(pf$age,pf$friend_count,method = "pearson")
+```
+
+```{r}
+with(subset(pf, age<=70), cor.test(age,friend_count))
+```
+
+```{r}
+ggplot(aes(x = www_likes_received, y = likes_received), data = pf) + 
+  geom_point(alpha = 1/20, position=position_jitter(h=0)) +
+  xlim (NA, quantile(pf$www_likes_received, .95)) +
+  ylim (NA, quantile(pf$likes_received, .95)) + 
+  geom_smooth(method = "lm", color = "red")
+```
+
+```{r}
+library(alr3)
+data(Mitchell)
+?Mitchell
+
+```
+```{r}
+
+ggplot(aes(x = Month, y = Temp), data = Mitchell) + 
+  geom_point() + 
+  scale_x_discrete(breaks = seq(0,203,11))
+```
+
+```{r}
+ggplot(aes(x=(Month%%12),y=Temp),data=Mitchell)+ 
+  geom_point() 
+
+```
+
+```{r}
+pf$age_with_months <- pf$age + (12-pf$dob_month)/12
+```
+
+```{r}
+age_months_groups <- group_by(pf,age_with_months)
+
+pf.fc_by_age_months <- summarise(age_months_groups, 
+          friend_count_mean = mean(friend_count),
+          friend_count_median = median(friend_count),
+          n = n())
+
+pf.fc_by_age_months <- arrange(pf.fc_by_age_months, age_with_months)
+```
+
+```{r}
+ggplot(aes(x = age_with_months, y = friend_count), data = pf) +
+  coord_cartesian(ylim = c(0, 1000), xlim = c(13,70)) + 
+  geom_point(alpha = 1/20, position=position_jitter(h=0), color = 'orange') +
+  geom_line(stat="summary", fun.y=mean)
+```
+
+
+```{r}
+
+plot_month <- ggplot(aes(x = age_with_months, y = friend_count_mean),
+  data = subset(pf.fc_by_age_months, age_with_months<71) )+
+  geom_line()+
+  geom_smooth()
+plot_age <- ggplot(aes(x = age, y = friend_count_mean),
+  data = subset(pf.fc_by_age, age<71) )+
+  geom_line()+
+  geom_smooth()
+plot_smooth <- ggplot(aes(x = round(age/5)*5, y = friend_count), data = subset(pf, age<71)) +
+  geom_line(stat="summary", fun.y=mean)
+grid.arrange(plot_month, plot_age, plot_smooth, ncol=1)
+
+
+```
+
+```{r}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

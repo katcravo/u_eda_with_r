@@ -1,0 +1,133 @@
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+rkdown document. 
+```{r pseudo facebook}
+setwd("C:/Users/Kathleen/Documents/udacity/R")
+pf <- read.csv("pseudo_facebook.tsv", sep = '\t')
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(reshape2)
+```
+
+
+
+
+```{r}
+pf.fc_by_age_gender <- pf %>%
+  filter(!is.na(gender))%>%
+  group_by(age, gender) %>%
+  summarise(mean_friend_count = mean(friend_count),
+            median_friend_count = median(friend_count),
+            n = n()) %>% 
+  ungroup() %>%
+  arrange(age)
+```
+
+```{r}
+ggplot(aes(x = age, y = median_friend_count), data = pf.fc_by_age_gender)+
+  geom_line(aes(color=gender))
+```
+
+```{r}
+pf.fc_by_age_gender.wide <- dcast(pf.fc_by_age_gender,
+                                  age ~ gender,
+                                  value.var = 'median_friend_count')
+head (pf.fc_by_age_gender.wide)
+```
+
+```{r}
+ggplot(aes(x = age, y = female/male), data = pf.fc_by_age_gender.wide)+
+  geom_line()+
+  geom_hline(yintercept = 1, alpha = 0.3, linetype = 2)
+```
+
+```{r}
+pf$year_joined <- floor(2014-(pf$tenure/365))
+summary(pf$year_joined)
+```
+
+```{r}
+pf$year_joined.bucket <- cut (pf$year_joined, c(2004, 2009, 2011, 2012, 2014))
+```
+
+```{r}
+table(pf$year_joined.bucket, useNA='ifany')
+
+ggplot(aes(x=age, y = friend_count), 
+           data = subset(pf, !is.na(gender))) + 
+  geom_line(aes(color = gender), stat = 'summary', fun.y = median)
+```
+
+```{r}
+
+ggplot(aes(x=age, y = friend_count), 
+           data = subset(pf, !is.na(year_joined.bucket))) + 
+  geom_line(aes(color = year_joined.bucket), stat = 'summary', fun.y = mean)+
+  geom_line(linetype = 2, stat = 'summary', fun.y=mean)
+```
+
+```{r}
+with(subset(pf,tenure>=1), summary(friend_count/tenure))
+
+```
+
+```{r}
+```
+
+```{r}
+```
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+
+```{r}
+```
+

@@ -1,0 +1,29 @@
+---
+title: "2016 Presidential Campaign Contributions from Michigan"
+author: "Kathleen Cravotta"
+date: "November 19, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#{r echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Set
+
+Ask your own questions about this data set. You may want to add variables to this data set such as the gender or political party of the candidate.
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
