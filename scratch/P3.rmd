@@ -8,14 +8,26 @@ output: html_document
 ```{r setup, include=FALSE}
 #{r echo=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = 'C:/Users/Kathleen/Documents/Udacity/R/2016-MI')
 ```
 
 ## Data Set
 
 Ask your own questions about this data set. You may want to add variables to this data set such as the gender or political party of the candidate.
 
-```{r cars}
-summary(cars)
+```{r}
+contributions <- read.csv("2016-MI.csv", header=TRUE, sep = ",", row.names = NULL)
+cand_info <- read.csv("cand_nms.csv", header=TRUE, sep = ",", row.names = NULL)
+library(ggplot2) 
+library(gridExtra) 
+library(dplyr)
+
+library(reshape2)
+```
+```{r}
+names(contributions)
+summary(contributions)
+contributions
 ```
 
 ## Including Plots
@@ -23,7 +35,449 @@ summary(cars)
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
-plot(pressure)
+library(ggplot2)
+ggplot(aes(x = cand_nm), data = contributions) + 
+  geom_bar()
 ```
 
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+negs <- subset(contributions, contb_receipt_amt < 1)
+negs
+
+``` 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+with limits
+```{r}
+ggplot(aes(x = contb_receipt_amt), data = contributions ) + 
+  geom_histogram()+
+  scale_x_continuous(limits = c(0, 500))
+
+```
+
+with bin width
+```{r}
+ggplot(aes(x = contb_receipt_amt), data = contributions) + 
+  geom_histogram(binwidth = 25)+
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0,1000,50))+
+  scale_y_log10()
+```
+
+with facet
+```{r}
+ggplot(aes(x = contb_receipt_amt), data = contributions) + 
+  geom_histogram(binwidth = 25)+
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0,1000,50)) + 
+  facet_wrap(~form_tp)
+```
+
+statistics by gender
+```{r}
+table(contributions$cand_nm)
+by(contributions$contb_receipt_amt, contributions, summary)
+```
+Observation: people in the race for a short time have a higher contribution average.  Maybe early contributions are higher than later ones.  
+The median is a good rep of the contributions. A 'long tail' on the data pulls up the mean.
+
+Checking dates
+```{r}
+contributions$date <- as.Date(paste(contributions$contb_receipt_dt), format="%d-%b-%y")
+#contributions
+ggplot(aes(x = date), data = contributions) + 
+   geom_histogram(binwidth = 7, color = 'black', fill = '#099DD9')+
+   scale_x_date()
+```
+Checking dates
+```{r}
+contributions$date <- as.Date(paste(contributions$contb_receipt_dt), format="%d-%b-%y")
+#contributions
+ggplot(aes(x = date), data = contributions) + 
+   geom_histogram(binwidth = 7, color = 'black', fill = '#099DD9')+
+   scale_x_date(limits = c(as.Date("2015-6-1"), NA))
+```
+
+```{r}
+ggplot(aes(x = log10(contb_receipt_amt)), data = contributions) + 
+  geom_histogram(binwidth = .1)+
+  scale_x_continuous(limits = c(-1, 4), breaks = seq(-1,4,.5)) +
+  scale_y_log10()
+
+```
+
+```{r}
+ggplot(aes(x = sqrt(contb_receipt_amt)), data = contributions) + 
+  geom_histogram(binwidth = 1)+
+  scale_x_continuous(limits = c(-1, 50), breaks = seq(0,50,10)) +
+  scale_y_sqrt()
+```
+multiplots
+```{r}
+p_n = ggplot(aes(x = contb_receipt_amt), data = contributions) + 
+  geom_histogram()
+p_log10 = ggplot(aes(x = log10(contb_receipt_amt)), data = contributions) + 
+  geom_histogram()
+p_sqrt = ggplot(aes(x = sqrt(contb_receipt_amt)), data = contributions) + 
+  geom_histogram()
+# arrange plots in grid
+grid.arrange(p_n, p_log10, p_sqrt, ncol =1)
+```
+multiplots
+ 
+```{r}
+p_n = ggplot(aes(x = contb_receipt_amt), data = contributions) + 
+  geom_histogram()
+p_log10 = p_n + scale_x_log10()
+p_sqrt = p_n + scale_x_sqrt()
+# arrange plots in grid
+grid.arrange(p_n, p_log10, p_sqrt, ncol=1)
+
+```
+```{r}
+hillndon = subset(contributions, cand_nm == "Clinton, Hillary Rodham"| cand_nm == "Trump, Donald J.")
+#summary(hillndon)
+
+ggplot(aes(x = date), data = hillndon) + 
+  geom_freqpoly(aes(color = cand_nm), binwidth=7) + 
+  scale_x_date(limits = c(as.Date("2015-6-1"), NA))+ 
+  xlab('Candidate') + 
+  ylab('Number of donations')
+```
+{}
+
+by stuff
+```{r}
+by(contributions$contb_receipt_amt, contributions$cand_nm, sum)
+```
+box plot
+```{r}
+ggplot(aes(x = cand_nm, y = contb_receipt_amt), data = hillndon) + 
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0, 250))
+```
+box plot
+```{r}
+by(hillndon$contb_receipt_amt, hillndon$cand_nm, summary) 
+```
+
+```{r}
+contributions$finalist <- NA
+#contributions$finalist <- ifelse(contributions$receipt_date > October, 1, 0)
+#contributions$finalist <- ifelse(contributions$mobile_check_in)
+summary(contributions$finalist)
+```
+ggplot(aes(x = date), data = contributions) + 
+   geom_histogram(binwidth = 7, color = 'black', fill = '#099DD9')+
+   scale_x_date(limits = c(as.Date("2015-6-1"), NA))
+
+unique
+```{r}
+for(nm in unique(contributions$cand_nm)){
+  Sys.sleep(0.1)
+  print (paste("$", nm, "$,", "male,Republican"))
+}
+
+```
+
+```{r}
+ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) + 
+  geom_point(alpha = 1/20)+
+  scale_y_log10()+
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
+```
+
+
+
+
+```{r}
+ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) + 
+  geom_jitter(alpha = 1/25)+
+  scale_y_log10()+
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
+```
+```{r}
+plot_date_dem <- ggplot(aes(x = date, y = contb_receipt_amt),
+                        data = subset(contributions, pol_party="Democrat")) + 
+  geom_point(color = 'blue', alpha = 1/25 ) +
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  scale_y_sqrt(limits = c(NA, 2800))
+plot_date_rep <- ggplot(aes(x = date, y = contb_receipt_amt),
+                        data = subset(contributions, pol_party="Republican")) + 
+  geom_point(color = 'red' , alpha = 1/25) +
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  scale_y_sqrt(limits = c(NA, 2800))
+grid.arrange(plot_date_dem, plot_date_rep, ncol=1)
+
+
+```
+
+```{r}
+
+#contributions$date.dayNum = contributions$date - as.Date("2015-6-1")
+```
+
+```{r}
+cand_groups <- group_by(contributions,cand_nm)
+
+contributions.by_cand <- summarise(cand_groups, 
+          contrib_mean = mean(contb_receipt_amt),
+          contrib_median = median(contb_receipt_amt),
+          n = n())
+
+contributions.by_cand
+
+```
+
+```{r}
+cand_info.combined <- merge(contributions.by_cand,cand_info,by="cand_nm")
+finals <- subset(contributions, date > as.Date("2016-10-15"))
+#summary(finals)
+cand_info.combined <- arrange(cand_info.combined, cand_nm)
+cand_info.combined
+```
+
+
+```{r}
+date_groups <- group_by(contributions,date)
+
+contributions.by_date <- summarise(date_groups, 
+          contrib_mean = mean(contb_receipt_amt),
+          contrib_median = median(contb_receipt_amt),
+          n = n())
+
+```
+
+```{r}
+
+ggplot(aes(x = date, y = contrib_mean), data = contributions.by_date) + 
+  geom_point() +
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  scale_y_sqrt()
+```
+
+
+
+```{r}
+plot_date_mean <- ggplot(aes(x = date, y = contrib_mean), data = contributions.by_date) + 
+  geom_point() +
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  scale_y_sqrt(limits = c(NA, 1500))
+plot_date_count <- ggplot(aes(x = date, y = n), data = contributions.by_date) + 
+  geom_point() +
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  scale_y_sqrt()
+grid.arrange(plot_date_mean, plot_date_count, ncol=1)
+
+
+```
+```{r}
+ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) + 
+  geom_jitter(alpha = 1/25, color = "orange")+
+  scale_y_log10()+
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  geom_line(stat="summary",fun.y=mean)
+```
+
+
+```{r}
+ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) + 
+  geom_jitter(alpha = 1/25, color = "orange")+
+  scale_y_log10()+
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  #geom_line(stat="summary", fun.y=mean)+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.1), linetype=2, color="blue")+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.9), linetype=2, color="blue")+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.5), color="blue")
+```
+
+
+```{r}
+cor.test(as.numeric(contributions$date),contributions$contb_receipt_amt,method = "pearson")
+```
+
+```{r}
+cor.test(as.numeric(cand_info.combined$contrib_mean),ifelse(cand_info.combined$gender == "male", 1, 0), method="pearson")
+cor.test(as.numeric(cand_info.combined$contrib_mean),ifelse(cand_info.combined$pol_party == "Republican", 1, 0), method="pearson")
+cor.test(as.numeric(cand_info.combined$contrib_mean),ifelse(cand_info.combined$pol_party == "Democrat", 1, 0), method="pearson")
+```
+```{r}
+city_groups <- group_by(contributions,contbr_city)
+
+contributions.by_city <- summarise(city_groups, 
+          contrib_mean = mean(contb_receipt_amt),
+          contrib_median = median(contb_receipt_amt),
+          n = n())
+
+contributions.by_city
+
+```
+```{r}
+hillndon$cand_nm <- factor (hillndon$cand_nm)
+
+
+hillndon.conts_by_date_cand <- hillndon %>%
+#filter (cand_nm == 'Clinton, Hillary Rodham' | cand_nm == "Trump, Donald J.") %>%
+  group_by(date, cand_nm) %>%
+  summarise(mean_cont = mean(contb_receipt_amt),
+            median_cont = median(contb_receipt_amt),
+            sum_cont = sum(contb_receipt_amt),
+            n = n()) %>%
+  ungroup() %>%
+  arrange(date)
+
+hillndon.conts_by_date_cand
+```
+
+
+```{r}
+ggplot(aes(x = date, y = sum_cont), data = hillndon.conts_by_date_cand)+
+  geom_line(aes(color=cand_nm))+
+  geom_smooth(aes(color=cand_nm), span=.5)+
+  scale_y_log10()
+```
+
+```{r}
+contributions.combined <- merge(contributions, cand_info, by = "cand_nm", all.contributions = TRUE)
+```
+
+```{r}
+contributions.by_date_party <- contributions.combined %>%
+  group_by(date, pol_party) %>%
+  summarise(mean_cont = mean(contb_receipt_amt),
+            median_cont = median(contb_receipt_amt),
+            sum_cont = sum(contb_receipt_amt),
+            n = n()) %>%
+  ungroup() %>%
+  arrange(date)
+
+contributions.by_date_party
+```
+
+```{r}
+ggplot(aes(x = date, y = sum_cont), data = contributions.by_date_party)+
+  geom_point(aes(color=pol_party))+
+  #geom_smooth(aes(color=pol_party))+
+  scale_y_log10()+
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
+```
+
+
+```{r}
+dates <- unique(contributions.by_date_party$date)
+contributions.by_date_for_party = data_frame(dates)
+contributions.by_date_for_party$Republican <- 
+  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
+                                            (subset(contributions.by_date_party,pol_party=='Republican'))$date)]
+contributions.by_date_for_party$Democrat <- 
+  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
+                                            (subset(contributions.by_date_party,pol_party=='Democrat'))$date)]
+contributions.by_date_for_party$Green <- 
+  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
+                                            (subset(contributions.by_date_party,pol_party=='Green'))$date)]
+contributions.by_date_for_party$Independent <- 
+  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
+                                            (subset(contributions.by_date_party,pol_party=='Independent'))$date)]
+contributions.by_date_for_party$Libertarian <- 
+  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
+                                            (subset(contributions.by_date_party,pol_party=='Libertarian'))$date)]
+contributions.by_date_for_party[is.na(contributions.by_date_for_party)] <- 0
+```
+
+```{r}
+ggplot(aes(x = dates, y = Democrat/Republican), data = contributions.by_date_for_party)+
+  geom_line()+
+  scale_y_log10()+
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  geom_hline(yintercept = 1, alpha = 0.2, linetype = 2)+
+  geom_smooth(span=.5)
+```
+
+```{r}
+contributions$date.dayNum = contributions$date - as.Date("2015-6-1")
+contributions.by_date_for_party$dayNum = contributions.by_date_for_party$dates - as.Date("2015-6-1")
+```
+#summary(contributions$date.dayNum)
+ggplot(aes(x= 30* round( dayNum /30 ), y = Democrat/Republican),
+       data = subset(contributions.by_date_for_party,  dayNum >= 0 ) )+
+  geom_line()+
+  scale_y_log10()+
+  #scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
+  geom_hline(yintercept = 1, alpha = 0.2, linetype = 2)
+
+
+
+```{r}
+contributions$contb_receipt_amt.bucket <- cut (contributions$contb_receipt_amt, c(0, 25, 100, 1000, 2700))
+summary(contributions$contb_receipt_amt.bucket)
+
+ggplot(aes(x=date), data = subset(contributions, !is.na(contb_receipt_amt.bucket))) + 
+  geom_freqpoly(aes(color = contb_receipt_amt.bucket))+
+  scale_y_sqrt()+
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
+```
+
+```{r}
+
+contributions.conts_by_date_cand <- contributions %>%
+  group_by(date, cand_nm) %>%
+  summarise(mean_cont = mean(contb_receipt_amt),
+            median_cont = median(contb_receipt_amt),
+            sum_cont = sum(contb_receipt_amt),
+            n = n()) %>%
+  ungroup() %>%
+  arrange(date)
+
+contributions.conts_by_date_cand
+
+```
+
+```{r}
+ggplot(aes(x=date, y = sum_cont), 
+       data = subset(contributions.conts_by_date_cand, date>= as.Date('2014-9-1')) )+
+         facet_wrap(~cand_nm) +
+         geom_point(alpha = .25) + 
+         scale_y_continuous(limits = c(NA, 100000))
+
+
+```
+
+```{r}
+
+contributions.combined.by_month_cand <- subset(contributions.combined, date >= as.Date('2014-9-1')) %>%
+  group_by( month = strftime(date, "%Y/%m"), cand_nm, pol_party) %>%
+  summarise(mean_cont = mean(contb_receipt_amt),
+            median_cont = median(contb_receipt_amt),
+            sum_cont = sum(contb_receipt_amt),
+            n = n()) %>%
+  ungroup() 
+
+contributions.combined.by_month_cand
+
+```
+
+```{r}
+ggplot(aes(x=month, y = sum_cont), 
+       data = contributions.combined.by_month_cand) +
+         facet_wrap(~cand_nm) +
+         geom_point(alpha = .5, aes(color = pol_party)) +
+         scale_y_sqrt()+
+         scale_colour_manual(name="",  
+                      values = c("Republican"="Red", "Democrat"="Blue", "Green"="Green",
+                                 "Libertarian"="Orange", "Independent"="Purple"))
+
+
+```
+
+
+
+
+
+
+
+
+
+
+

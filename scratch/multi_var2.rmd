@@ -87,6 +87,16 @@ with(subset(pf,tenure>=1), summary(friend_count/tenure))
 ```
 
 ```{r}
+
+ggplot(aes(x=7*round(tenure*7), y = friendships_initiated/tenure), 
+           data = subset(pf, !is.na(year_joined.bucket))) + 
+  geom_line(aes(color = year_joined.bucket), stat = 'summary', fun.y = mean)
+  #geom_line(linetype = 2, stat = 'summary', fun.y=mean)+
+#scale_y_log10()
+```
+
+```{r}
+
 ```
 
 ```{r}
