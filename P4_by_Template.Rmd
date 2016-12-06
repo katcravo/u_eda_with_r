@@ -28,11 +28,16 @@ This exploratory data analysis covers 2016 presidential campaign contributions f
 
 ```{r echo=FALSE, Load_the_Data}
 contributions <- read.csv("2016-MI.csv", header=TRUE, sep = ",", row.names = NULL)
+#X column was added to the header row manually, due to the extra commas on the end of each row of data
+#Here is just removing that X column.  This was the simplest approach I found
 contributions$X <- NULL
 
+#load enrichment info with gender and political party
 cand_info <- read.csv("cand_nms.csv", header=TRUE, sep = ",", row.names = NULL)
 
+#parse the date
 contributions$date <- as.Date(paste(contributions$contb_receipt_dt), format="%d-%b-%y")
+#lcreate a data structure for the combined data
 contributions.combined <- merge(contributions, cand_info, by = "cand_nm", all.contributions = TRUE)
 ```
 There are approximately 140,000 records comprised of 20 variables containing contribution and contributor information.  
@@ -163,6 +168,7 @@ The contribution receipt date was parsed to a date data type for easier sorting.
 ```
 
 ```{r group by candidate}
+# the next few sections create grouped data structures that help visualize summary info
 cand_groups <- group_by(contributions,cand_nm)
 
 contributions.by_cand <- summarise(cand_groups, 
@@ -456,7 +462,7 @@ ggplot(aes(x = date), data = hillndon) +
 ```
 
 ### ... And Bernie
-The Clinton and Trump line plot shows that before the summer of 2016, there was some support for Clinton but almost none for Trump.  I suspect that Bernie's presence in the race had an impact on this.  Here is the same chart, but including Bernie.
+The Clinton and Trump line plot shows that before the summer of 2016, there was some support for Clinton and almost none for Trump.  I suspect that Bernie would have a strong presence during that time.  Here is the same chart, but including Bernie, confirming.
 ```{r Clinton and Trump and Bernie Line}
 hdb = subset(contributions, cand_nm == "Clinton, Hillary Rodham"| cand_nm == "Trump, Donald J." | cand_nm == "Sanders, Bernard")
 hdb$cand_nm <- factor (hdb$cand_nm)
@@ -604,10 +610,14 @@ ggplot(aes(x = dem_rep_ratio, y = dem_rep_total, size = n, color = dem_rep_ratio
 
 
 ### Description Three
+
 The above graph has a node for each city.  The placement and color of the node indicate if the city was Democrat (Left, Blue) or Republican (Right, Red).  The node is placed low or high based on the total contribution amount from that city.  The size of the node indicates the number of contributions, and can be used go guage the size of the support base.  On the far left and far right of the graph, the blue line and red line show smaller towns or are caused by inconsistent city names.  The number of cities on the right side of the graph are much more than the number of cities on the left.  But the cities are generally smaller so the graph doesn't appear much denser on the right.  
-------
+```{r}
+#nothing
+```
 
 # Reflection
+
 Exploring the publicly available data of contributions to presidential campaigns has revealed that Clinton and Bernie received the highest number of contributions, while the Republican party candidates were numerous and their support scattered.  As the presidential race drew on, Clinton and Trump were nominated as their party's candidates by primary elections throughout the nation. The donations to the Trump campaign were much higher on average than the contributions to Democrats. At the time of the Republican and Democrat National Conventions, the contributions spiked sharply up.  
 
 While I did not look at the contributor names, an important step in improving the clarity of this data would be to group the contributions by contributor to get a measure of the support base, and to clean up any refunds.  It would also be interesting to see if a contributor supported more than one candidate.  Cleaning up the city names and adding geographic information would be helpful in visualizing support received from different areas.
