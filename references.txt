@@ -1,0 +1,31 @@
+Information:
+
+1. Presidential Campaign Finance Download - Federal Election Commission.  http://fec.gov/disclosurep/PDownload.do  Accessed November 20, 2016.
+
+2. Gender was inferred by generally accepted public information.
+
+3a. Republican Party presidential candidates, 2016 - Wikipedia.  https://en.wikipedia.org/wiki/Republican_Party_presidential_candidates,_2016  Accessed November 25, 2016.
+
+3b. Democrat Party presidential candidates, 2016 - Wikipedia.  https://en.wikipedia.org/wiki/Democratic_Party_presidential_candidates,_2016 Accessed November 25, 2016.
+
+3c. United States third-party and independent presidential candidates, 2016 - Wikipedia.  https://en.wikipedia.org/wiki/United_States_third-party_and_independent_presidential_candidates,_2016 Accessed November 25, 2016.
+
+4. 2016 Republican National Convention - Wikipedia. https://en.wikipedia.org/wiki/2016_Republican_National_Convention
+
+5. Gloria Steinem: Why It's So Important to Be a Passionate Voter - Cosmopolitan. http://www.cosmopolitan.com/politics/news/a32587/gloria-steinem-passionate-voter/ Accessed December 5, 2016.
+
+Coding:
+
+6. Rotating and spacing axis labels in ggplot2 - Stack Overflow. http://stackoverflow.com/questions/1330989/rotating-and-spacing-axis-labels-in-ggplot2  Accessed December 2, 2016.
+
+7. Gradient of n colors ranging from color 1 and color 2 - Stack Overflow. http://stackoverflow.com/questions/13353213/gradient-of-n-colors-ranging-from-color-1-and-color-2 Accessed December 3, 2016. 
+
+8. Plot with conditional colors based on values in R - Stack Overflow. http://stackoverflow.com/questions/11838278/plot-with-conditional-colors-based-on-values-in-r Accessed December 1, 2016
+
+9. Control the size of points in an R scatterplot? - Stack Overflow. http://stackoverflow.com/questions/2579995/control-the-size-of-points-in-an-r-scatterplot  Accessed December 3, 2016
+
+10. Merging Data - Quick R. http://www.statmethods.net/management/merging.html Accessed November 25, 2016.
+
+11. Date formats in R - R-bloggers. https://www.r-bloggers.com/date-formats-in-r/  Accessed November 20, 2016.
+
+12. Comma Separated Values (CSV) Data Files - DMSI, Jay Summet.  https://www.summet.com/dmsi/html/CSVdataFiles.html  Accessed November 20, 2016. ("place an extra comma at the end of the header")

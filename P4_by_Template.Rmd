@@ -24,7 +24,7 @@ library(reshape2)
 ```
 ## Contributions Data Set 
 
-This exploratory data analysis covers 2016 presidential campaign contributions from residents of Michigan. The data is publicly available on the board of elections website.  
+This exploratory data analysis covers 2016 presidential campaign contributions from residents of Michigan. The data is publicly available on the federal election commission website.^1^
 
 ```{r echo=FALSE, Load_the_Data}
 contributions <- read.csv("2016-MI.csv", header=TRUE, sep = ",", row.names = NULL)
@@ -66,7 +66,7 @@ ggplot(aes(x = cand_nm), data = contributions) +
 
 ### Enriching the Data Set 
 
-The gender and political party for each candidate was used to enrich the data set.  This publicly available information provides interesting dimensions.  The political party of the candidates is helpful for guaging the 
+The gender^2^ and political party^3^ for each candidate was used to enrich the data set.  This publicly available information provides interesting dimensions.  The political party of the candidates is helpful for guaging the voter support tendencies.   
 
 ```{r Read data and add new variables}
 head(cand_info)
@@ -381,16 +381,19 @@ grid.arrange(plot_date_dem, plot_date_rep, ncol=1)
 
 ```
 
-To get a better idea of the contributions to each political party per day, this chart shows the daily sum of contributions to each political party.  
 
-```{r scatterplot by date and political party}
-ggplot(aes(x = date, y = sum_cont), data = contributions.by_date_party)+
-  geom_point(aes(color=pol_party))+
-  #geom_smooth(aes(color=pol_party))+
-  scale_y_log10()+
-  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
+To get a better picture of how Republican and Democrat support changed over time, this chart shows the weekly number of contributions for both parties.
+```{r Democrat and Republican Line}
+demnrep = subset(contributions.combined, pol_party == "Republican"| pol_party == "Democrat")
+#summary(hillndon)
+demnrep$pol_party <- factor (demnrep$pol_party)
+
+ggplot(aes(x = date), data = demnrep) + 
+  geom_freqpoly(aes(color = pol_party), binwidth=7) + 
+  scale_x_date(limits = c(as.Date("2015-6-1"), NA))+ 
+  xlab('Timeline') + 
+  ylab('Number of donations')
 ```
-
 
 
 ```{r date with columns for each political party sum}
@@ -414,7 +417,7 @@ contributions.by_date_for_party$Libertarian <-
 contributions.by_date_for_party[is.na(contributions.by_date_for_party)] <- 0
 ```
 
-The ratio of contributions to Democrats to Republicans indicate that the support for each party has not been heavily skewed to one side.
+The ratio of contributions to Democrats to Republicans indicate that the monetary support for each party has not been heavily skewed to one side.
 ```{r graph dem rep ratio of contribution amoutns over time}
 ggplot(aes(x = dates, y = (Democrat-Republican)/(Democrat+Republican)), data = contributions.by_date_for_party)+
   geom_line()+
@@ -426,9 +429,19 @@ ggplot(aes(x = dates, y = (Democrat-Republican)/(Democrat+Republican)), data = c
 ```
 
 
+To get a better idea of the contributions to each political party per day, this chart shows the daily sum of contributions to each political party.  
+
+```{r scatterplot by date and political party}
+ggplot(aes(x = date, y = sum_cont), data = contributions.by_date_party)+
+  geom_point(aes(color=pol_party))+
+  #geom_smooth(aes(color=pol_party))+
+  scale_y_log10()+
+  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
+```
+
 ### Donations to Clinton and Trump
 
-To find more detail on the contributions, this plot drills down on the two major candidates at race end, Clinton and Trump.  We can see that Clinton had steady support throughout the campaign, while Trump had a spike of support around the time of the Republican National Convention.
+To find more detail on the contributions, this plot drills down on the two major candidates at race end, Clinton and Trump.  We can see that Clinton had steady support throughout the campaign, while Trump had a spike of support around the time of the Republican National Convention.^4^
 
 ```{r Clinton and Trump Line}
 hillndon = subset(contributions, cand_nm == "Clinton, Hillary Rodham"| cand_nm == "Trump, Donald J.")
@@ -455,7 +468,7 @@ ggplot(aes(x = date), data = hdb) +
   ylab('Number of donations')
 ```
 
-We can see in the above plot that before the summer of 2016, Bernie's contributions exceeded both Clinton's and Trump's. 
+We can see in the above plot that before the summer of 2016, Bernie's contributions from Michigan exceeded both Clinton's and Trump's. 
 
 The box plot below illustrates that the majority of Clinton's contribution amounts were over a smaller range than the majority of contributions made to Trump.  
 ```{r Clinton and Trump Box Plot}
@@ -544,14 +557,15 @@ ggplot(aes(x = date, y = sum_cont), data = hillndon.conts_by_date_cand)+
   geom_line(aes(color= cand_nm) )+
   scale_color_discrete(name="Candidate")+
   geom_smooth(aes(color=cand_nm), span=.5)+
-  scale_y_log10(breaks = c(100,1000,10000,100000), labels = c(100,1000,10000,100000))+
+  scale_y_sqrt()+
+#(breaks = c(100,1000,10000,100000), labels = c(100,1000,10000,100000))+
   ggtitle("Contributions by Date - Clinton and Trump") +
   labs (x = "Timeline", y = "Total Contributions (Dollars)") 
 ```
 
 
 ### Description Two
-The sum of contributions over time for Clinton and Trump lets us compare their campaigns.  The financial support to Clinton's party was generally higher.  A smoothing function is used to show the trend over the noisy line.
+The sum of contributions over time for Clinton and Trump lets us compare their campaigns.  The financial support to Clinton's party was generally higher.  Trump did have spikes of support at the time of the Republican National convention and som large contribution campaigns at the end of the campain.  A smoothing function is used to show the trend over the noisy lines.
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
@@ -590,9 +604,13 @@ ggplot(aes(x = dem_rep_ratio, y = dem_rep_total, size = n, color = dem_rep_ratio
 
 
 ### Description Three
-The above graph has a node for each city.  The placement and color of the node indicate if the city was Democrat (Left, Blue) or Republican (Right, Red).  The node is placed low or high based on the total contribution amount from that city.  The size of the node indicates the number of contributions, and can be used go guage the size of the support base.  On the far left and far right of the graph, the blue line and red line show smaller towns or are caused by inconsistent city names.  
+The above graph has a node for each city.  The placement and color of the node indicate if the city was Democrat (Left, Blue) or Republican (Right, Red).  The node is placed low or high based on the total contribution amount from that city.  The size of the node indicates the number of contributions, and can be used go guage the size of the support base.  On the far left and far right of the graph, the blue line and red line show smaller towns or are caused by inconsistent city names.  The number of cities on the right side of the graph are much more than the number of cities on the left.  But the cities are generally smaller so the graph doesn't appear much denser on the right.  
 ------
 
 # Reflection
+Exploring the publicly available data of contributions to presidential campaigns has revealed that Clinton and Bernie received the highest number of contributions, while the Republican party candidates were numerous and their support scattered.  As the presidential race drew on, Clinton and Trump were nominated as their party's candidates by primary elections throughout the nation. The donations to the Trump campaign were much higher on average than the contributions to Democrats. At the time of the Republican and Democrat National Conventions, the contributions spiked sharply up.  
 
+While I did not look at the contributor names, an important step in improving the clarity of this data would be to group the contributions by contributor to get a measure of the support base, and to clean up any refunds.  It would also be interesting to see if a contributor supported more than one candidate.  Cleaning up the city names and adding geographic information would be helpful in visualizing support received from different areas.
+
+I have not been able to decipher a large support base for Trump from this data. while the total monetary support for Trump was pretty high, the number of people supporting him specifically, as well as all Republicans, was lower.  Using the number of contributions appears to be a better measure of voter support than the monetary amount of contributions, because everybody's vote is the same whether they have \$5 or \$500 or not a penny to give.  "The voting booth is the one place on earth where the least powerful and the most powerful are equal." - Gloria Steinem^5^
 
