@@ -1,5 +1,5 @@
 ---
-title: "2016 Presidential Campaign Contributions from Michigan"
+title: "2016 Campaign Contributions from Michigan"
 author: "Kathleen Cravotta"
 date: "November 19, 2016"
 output: html_document
@@ -12,9 +12,9 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning = FALSE)
 knitr::opts_knit$set(root.dir = 'C:/Users/Kathleen/Documents/Udacity/R/2016-MI')
 ```
 
-## Data Set
+## Contributions Data Set 
 
-Ask your own questions about this data set. You may want to add variables to this data set such as the gender or political party of the candidate.
+This exploratory data analysis covers 2016 presidential campaign contributions from residents of Michigan. The data is publicly available on the board of elections website.  
 
 ```{r Read data and add new variables}
 contributions <- read.csv("2016-MI.csv", header=TRUE, sep = ",", row.names = NULL)
@@ -29,16 +29,15 @@ library(reshape2)
 
 contributions$date <- as.Date(paste(contributions$contb_receipt_dt), format="%d-%b-%y")
 contributions.combined <- merge(contributions, cand_info, by = "cand_nm", all.contributions = TRUE)
+head(contributions)
 ```
-```{r}
-names(contributions)
-summary(contributions)
-contributions
+```{r summary of input data}
+#names(contributions)
+#summary(contributions)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
+###Number of contributions per candidate
+This graph illustrates that Clinton and Sanders had the highest numbers of contributions.
 
 ```{r contributions per candidate}
 library(ggplot2)
@@ -46,20 +45,18 @@ ggplot(aes(x = cand_nm), data = contributions) +
   geom_bar()+ theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+### Enriching the Data Set 
 
+The gender and political party for each candidate was used to enrich the data set.  
 
-## Including Plots
+```{r Read data and add new variables}
+head(cand_info)
+```
 
-You can also embed plots, for example:
+## Size of contribution vs. Number of contributions
 
-```{r negatives}
-negs <- subset(contributions, contb_receipt_amt < 1)
-negs
+This section aims to provide a visualization of the number of contributions.  By default, the majority of contributions are clustered at the low end of the graph, or less than $100.  
 
-``` 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-with limits
 ```{r contribution amounts}
 ggplot(aes(x = contb_receipt_amt), data = contributions ) + 
   geom_histogram()+
@@ -133,7 +130,7 @@ contributions.by_cand <- summarise(cand_groups,
           contrib_last = max(date),
           n = n())
 
-contributions.by_cand
+head(contributions.by_cand)
 
 ```
 
@@ -143,10 +140,10 @@ cont_subset <- contributions.combined[c("cand_nm", "contb_receipt_amt", "date", 
 cand_remaining <- factor(subset(contributions.by_cand, contrib_last > as.Date('2016-07-01'))$cand_nm)
 cont_subset_cand <- subset(cont_subset,cand_nm %in% cand_remaining )
 cont_subset_cand$cand_nm <- factor (cont_subset_cand$cand_nm)
-names(cont_subset)
+#names(cont_subset)
 ggpairs(cont_subset_cand[sample.int(nrow(cont_subset),2000), ])
 ```
-```{r contributions per candidate}
+```{r contribution sum per candidate}
 library(ggplot2)
 ggplot(aes(x = cand_nm, y = contrib_sum), data = contributions.by_cand) + 
   geom_bar( stat="identity" )+ theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -160,7 +157,7 @@ hillndon$cand_nm <- factor (hillndon$cand_nm)
 ggplot(aes(x = date), data = hillndon) + 
   geom_freqpoly(aes(color = cand_nm), binwidth=7) + 
   scale_x_date(limits = c(as.Date("2015-6-1"), NA))+ 
-  xlab('Candidate') + 
+  xlab('Timeline') + 
   ylab('Number of donations')
 ```
 {}
@@ -172,25 +169,25 @@ ggplot(aes(x = cand_nm, y = contb_receipt_amt), data = hillndon) +
   coord_cartesian(ylim = c(0, 250))
 ```
 box plot
-```{r}
+```{r summary Clinton and Trum amounts}
 by(hillndon$contb_receipt_amt, hillndon$cand_nm, summary) 
 ```
 
 
-```{r}
+```{r scatterplot of contributions over time}
 ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) + 
   geom_jitter(alpha = 1/25)+
   scale_y_log10()+
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
 ```
-```{r}
+```{r scatterplots of democrat and repulican contributions}
 plot_date_dem <- ggplot(aes(x = date, y = contb_receipt_amt),
-                        data = subset(contributions, pol_party="Democrat")) + 
+                        data = subset(contributions.combined, pol_party=="Democrat")) + 
   geom_point(color = 'blue', alpha = 1/25 ) +
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
   scale_y_sqrt(limits = c(NA, 2800))
 plot_date_rep <- ggplot(aes(x = date, y = contb_receipt_amt),
-                        data = subset(contributions, pol_party="Republican")) + 
+                        data = subset(contributions.combined, pol_party=="Republican")) + 
   geom_point(color = 'red' , alpha = 1/25) +
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
   scale_y_sqrt(limits = c(NA, 2800))
@@ -200,16 +197,16 @@ grid.arrange(plot_date_dem, plot_date_rep, ncol=1)
 ```
 
 
-```{r}
+```{r combine candidate info in summary}
 cand_info.combined <- merge(contributions.by_cand,cand_info,by="cand_nm")
 finals <- subset(contributions, date > as.Date("2016-10-15"))
 #summary(finals)
 cand_info.combined <- arrange(cand_info.combined, cand_nm)
-cand_info.combined
+head(cand_info.combined)
 ```
 
 
-```{r}
+```{r group by date}
 date_groups <- group_by(contributions,date)
 
 contributions.by_date <- summarise(date_groups, 
@@ -218,16 +215,6 @@ contributions.by_date <- summarise(date_groups,
           n = n())
 
 ```
-
-```{r}
-
-ggplot(aes(x = date, y = contrib_mean), data = contributions.by_date) + 
-  geom_point() +
-  scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
-  scale_y_sqrt()
-```
-
-
 
 ```{r Average Contribution and Number of contributions over time}
 plot_date_mean <- ggplot(aes(x = date, y = contrib_mean), data = contributions.by_date) + 
@@ -257,13 +244,12 @@ ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) +
 ```
 
 
-```{r 80% quantile}
+```{r 80 quantile}
 ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) + 
   geom_jitter(alpha = 1/25, color = "orange")+
   scale_y_log10()+
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
   #geom_line(stat="summary", fun.y=mean)+
-  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.1), linetype=2, color="blue")+
   geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.9), linetype=2, color="blue")+
   geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.5), color="blue")
 ```
@@ -271,8 +257,6 @@ ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) +
 
 
 ```{r group by city}
-#Enhance this section.  Add a ratio for democratic & republican contributions (sum dem - sum rep)/(sum dem + sum rep) within each city.  
-#Then make a gradient color on this parameter.  Use this parameter as the x axis, and create a scatter plot.  The y axis (sum dem + sum rep)
 city_groups <- group_by(contributions,contbr_city)
 
 contributions.by_city <- summarise(city_groups, 
@@ -280,35 +264,12 @@ contributions.by_city <- summarise(city_groups,
           contrib_median = median(contb_receipt_amt),
           n = n())
 
-contributions.by_city
+head(contributions.by_city)
 
 ```
-```{r}
-hillndon$cand_nm <- factor (hillndon$cand_nm)
 
 
-hillndon.conts_by_date_cand <- hillndon %>%
-#filter (cand_nm == 'Clinton, Hillary Rodham' | cand_nm == "Trump, Donald J.") %>%
-  group_by(date, cand_nm) %>%
-  summarise(mean_cont = mean(contb_receipt_amt),
-            median_cont = median(contb_receipt_amt),
-            sum_cont = sum(contb_receipt_amt),
-            n = n()) %>%
-  ungroup() %>%
-  arrange(date)
-
-hillndon.conts_by_date_cand
-```
-
-
-```{r}
-ggplot(aes(x = date, y = sum_cont), data = hillndon.conts_by_date_cand)+
-  geom_line(aes(color=cand_nm))+
-  geom_smooth(aes(color=cand_nm), span=.5)+
-  scale_y_log10()
-```
-
-```{r}
+```{r group by date and political party}
 contributions.by_date_party <- contributions.combined %>%
   group_by(date, pol_party) %>%
   summarise(mean_cont = mean(contb_receipt_amt),
@@ -318,10 +279,10 @@ contributions.by_date_party <- contributions.combined %>%
   ungroup() %>%
   arrange(date)
 
-contributions.by_date_party
+#contributions.by_date_party
 ```
 
-```{r}
+```{r scatterplot by date and political party}
 ggplot(aes(x = date, y = sum_cont), data = contributions.by_date_party)+
   geom_point(aes(color=pol_party))+
   #geom_smooth(aes(color=pol_party))+
@@ -330,7 +291,7 @@ ggplot(aes(x = date, y = sum_cont), data = contributions.by_date_party)+
 ```
 
 
-```{r}
+```{r date with columns for each political party sum}
 dates <- unique(contributions.by_date_party$date)
 contributions.by_date_for_party = data_frame(dates)
 contributions.by_date_for_party$Republican <- 
@@ -351,7 +312,7 @@ contributions.by_date_for_party$Libertarian <-
 contributions.by_date_for_party[is.na(contributions.by_date_for_party)] <- 0
 ```
 
-```{r}
+```{r graph dem rep ratio of contribution amoutns over time}
 ggplot(aes(x = dates, y = Democrat/Republican), data = contributions.by_date_for_party)+
   geom_line()+
   scale_y_log10()+
@@ -360,21 +321,7 @@ ggplot(aes(x = dates, y = Democrat/Republican), data = contributions.by_date_for
   geom_smooth(span=.5)
 ```
 
-```{r}
-contributions$date.dayNum = contributions$date - as.Date("2015-6-1")
-contributions.by_date_for_party$dayNum = contributions.by_date_for_party$dates - as.Date("2015-6-1")
-```
-#summary(contributions$date.dayNum)
-ggplot(aes(x= 30* round( dayNum /30 ), y = Democrat/Republican),
-       data = subset(contributions.by_date_for_party,  dayNum >= 0 ) )+
-  geom_line()+
-  scale_y_log10()+
-  #scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
-  geom_hline(yintercept = 1, alpha = 0.2, linetype = 2)
-
-
-
-```{r}
+```{r contributions in each bucket over time}
 contributions$contb_receipt_amt.bucket <- cut (contributions$contb_receipt_amt, c(0, 25, 100, 1000, 2700))
 summary(contributions$contb_receipt_amt.bucket)
 
@@ -384,7 +331,7 @@ ggplot(aes(x=date), data = subset(contributions, !is.na(contb_receipt_amt.bucket
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
 ```
 
-```{r}
+```{r group by date and candidate}
 
 contributions.conts_by_date_cand <- contributions %>%
   group_by(date, cand_nm) %>%
@@ -395,11 +342,11 @@ contributions.conts_by_date_cand <- contributions %>%
   ungroup() %>%
   arrange(date)
 
-contributions.conts_by_date_cand
+#head(contributions.conts_by_date_cand)
 
 ```
 
-```{r}
+```{r facet wrap for contributions per candidate}
 ggplot(aes(x=date, y = sum_cont), 
        data = subset(contributions.conts_by_date_cand, date>= as.Date('2014-9-1')) )+
          facet_wrap(~cand_nm) +
@@ -410,7 +357,7 @@ ggplot(aes(x=date, y = sum_cont),
 
 ```
 
-```{r}
+```{r get monthly totals per candidate}
 
 contributions.combined.by_month_cand <- subset(contributions.combined, date >= as.Date('2014-9-1')) %>%
   group_by( month = strftime(date, "%Y/%m"), cand_nm, pol_party) %>%
@@ -420,11 +367,11 @@ contributions.combined.by_month_cand <- subset(contributions.combined, date >= a
             n = n()) %>%
   ungroup() 
 
-contributions.combined.by_month_cand
+head(contributions.combined.by_month_cand)
 
 ```
 
-```{r}
+```{r facet wrap monthly totals per candidate with color}
 ggplot(aes(x=month, y = sum_cont), 
        data = contributions.combined.by_month_cand) +
          facet_wrap(~cand_nm) +
@@ -434,14 +381,79 @@ ggplot(aes(x=month, y = sum_cont),
          theme(axis.text.x = element_text(angle = 90, hjust = 1))+
          scale_colour_manual(name="",  
                       values = c("Republican"="Red", "Democrat"="Blue", "Green"="Green",
-                                 "Libertarian"="Orange", "Independent"="Purple")) 
+                                 "Libertarian"="Orange", "Independent"="Purple")) + 
+         ggtitle("Monthly Contribution totals to candidate") +
+         labs (x = "Months", y = "Total Contributions (Dollars)") 
   
-         #
+         
 
 
 ```
 
+```{r Clinton and Trump - Group by Date}
+hillndon$cand_nm <- factor (hillndon$cand_nm)
 
 
+hillndon.conts_by_date_cand <- hillndon %>%
+#filter (cand_nm == 'Clinton, Hillary Rodham' | cand_nm == "Trump, Donald J.") %>%
+  group_by(date, cand_nm) %>%
+  summarise(mean_cont = mean(contb_receipt_amt),
+            median_cont = median(contb_receipt_amt),
+            sum_cont = sum(contb_receipt_amt),
+            n = n()) %>%
+  ungroup() %>%
+  arrange(date)
 
+#head(hillndon.conts_by_date_cand)
+```
+
+```{r Graph Clinton and Trump sums by date}
+ggplot(aes(x = date, y = sum_cont), data = hillndon.conts_by_date_cand)+
+  geom_line(aes(color= cand_nm) )+
+  scale_color_discrete(name="Candidate")+
+  geom_smooth(aes(color=cand_nm), span=.5)+
+  scale_y_log10(breaks = c(100,1000,10000,100000), labels = c(100,1000,10000,100000))+
+  ggtitle("Contributions by Date - Clinton and Trump") +
+  labs (x = "Timeline", y = "Total Contributions (Dollars)") 
+```
+
+
+```{r group by city for ratio}
+#Enhance this section.  Add a ratio for democratic & republican contributions (sum dem - sum rep)/(sum dem + sum rep) within each city.  Then make a gradient color on this parameter.  Use this parameter as the x axis, and create a scatter plot.  The y axis (sum dem +sum)
+
+city_groups.combined <- group_by(contributions.combined,contbr_city)
+
+contributions.by_city.ratio <- summarise(city_groups.combined, 
+          contrib_mean = mean(contb_receipt_amt),
+          contrib_median = median(contb_receipt_amt),
+          contrib_sum = sum(contb_receipt_amt),
+          sum_rep = sum(contb_receipt_amt[pol_party=="Republican"]),
+          sum_dem = sum(contb_receipt_amt[pol_party=="Democrat"]),
+          dem_rep_total = sum(contb_receipt_amt[pol_party=="Republican"]) + sum(contb_receipt_amt[pol_party=="Democrat"]),
+          dem_rep_ratio = ((sum(contb_receipt_amt[pol_party=="Republican"])) - (sum(contb_receipt_amt[pol_party=="Democrat"]) ) ) / ((sum(contb_receipt_amt[pol_party=="Republican"])) + (sum(contb_receipt_amt[pol_party=="Democrat"]) )),
+          #dem_rep_n_ratio = ((count(contb_receipt_amt[pol_party=="Republican"])) - (count(contb_receipt_amt[pol_party=="Democrat"]) ) ) / ((count(contb_receipt_amt[pol_party=="Republican"])) + (count(contb_receipt_amt[pol_party=="Democrat"]) )),
+          n = n())
+
+
+#head(contributions.by_city.ratio)
+
+```
+```{r Ratio of democratic vs. republican contribution amounts}
+
+bottom_label <- paste(c(nrow(subset(contributions.by_city.ratio, dem_rep_ratio<0)),
+                        "Cities |", 
+                        nrow(subset(contributions.by_city.ratio, dem_rep_ratio>0)),
+                        "Cities"),
+                      collapse = " ")
+                      
+ggplot(aes(x = dem_rep_ratio, y = dem_rep_total, size = n, color = dem_rep_ratio), data = contributions.by_city.ratio) + 
+  geom_jitter(alpha = 1/5)+
+  scale_x_continuous(labels = c("Democrat", "Majority Dem", "Neutral", "Majority Rep", "Republican"))+
+  scale_y_log10(breaks = c(0,10, 100, 1000,10000, 100000, 1000000), labels = c(0, 10,100, 1000,10000, 100000, 1000000) ) +
+  coord_cartesian(xlim = c(-1.1, 1.1) ) +
+  scale_size(name = "# Contrib")+
+  scale_colour_gradient(low="Blue", high = "Red", guide = FALSE)+
+  ggtitle("Contribution Amounts by City") +
+  labs (x = bottom_label, y = "Total Contribution Amount") 
+```
 
