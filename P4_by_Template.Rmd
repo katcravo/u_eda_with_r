@@ -1,11 +1,12 @@
-Michigan 2106 by Kathleen Cravotta
+Michigan 2016 by Kathleen Cravotta
 ========================================================
 
 ```{r setup, include=FALSE}
 #{r echo=FALSE, message=FALSE, warning=FALSE}
 #knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning = FALSE)
-knitr::opts_knit$set(root.dir = 'C:/Users/Kathleen/Documents/Udacity/R/2016-MI')
+knitr::opts_knit$set(
+  root.dir = 'C:/Users/Kathleen/Documents/Udacity/R/2016-MI')
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
@@ -24,22 +25,27 @@ library(reshape2)
 ```
 ## Contributions Data Set 
 
-This exploratory data analysis covers 2016 presidential campaign contributions from residents of Michigan. The data is publicly available on the federal election commission website.^1^
+This exploratory data analysis covers 2016 presidential campaign contributions from residents of Michigan. The data is publicly available on the federal election commission website.^1^  Some observations of the data are made in an attempt to discover patterns about candidate support from contributors.
 
 ```{r echo=FALSE, Load_the_Data}
-contributions <- read.csv("2016-MI.csv", header=TRUE, sep = ",", row.names = NULL)
+contributions <- 
+  read.csv("2016-MI.csv", header=TRUE, sep = ",", row.names = NULL)
 #X column was added to the header row manually, due to the extra commas on the end of each row of data
 #Here is just removing that X column.  This was the simplest approach I found
 contributions$X <- NULL
 
 #load enrichment info with gender and political party
-cand_info <- read.csv("cand_nms.csv", header=TRUE, sep = ",", row.names = NULL)
+cand_info <- 
+  read.csv("cand_nms.csv", header=TRUE, sep = ",", row.names = NULL)
 
 #parse the date
-contributions$date <- as.Date(paste(contributions$contb_receipt_dt), format="%d-%b-%y")
+contributions$date <- 
+  as.Date(paste(contributions$contb_receipt_dt), format="%d-%b-%y")
 #lcreate a data structure for the combined data
-contributions.combined <- merge(contributions, cand_info, by = "cand_nm", all.contributions = TRUE)
+contributions.combined <- 
+  merge(contributions, cand_info, by = "cand_nm", all.contributions = TRUE)
 ```
+
 There are approximately 140,000 records comprised of 20 variables containing contribution and contributor information.  
 ```{r echo=FALSE, print_some}
 
@@ -66,7 +72,8 @@ Of most interest in the data set is the presidential candidates for which the co
 ```{r contributions per candidate}
 library(ggplot2)
 ggplot(aes(x = cand_nm), data = contributions) + 
-  geom_bar()+ theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  geom_bar()+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE)
 ```
 
 ### Enriching the Data Set 
@@ -87,18 +94,18 @@ ggplot(aes(x = pol_party), data = contributions.combined) +
 ```
 
 Checking dates
+
 ```{r Contributions by Date}
-#contributions$date <- as.Date(paste(contributions$contb_receipt_dt), format="%d-%b-%y")
-#contributions
+
 ggplot(aes(x = date), data = contributions) + 
    geom_histogram(binwidth = 7, color = 'black', fill = '#099DD9')+
    scale_x_date(limits = c(as.Date("2015-6-1"), NA))
+
 ```
 
-## Size of contribution vs. Number of contributions
+### Size of contribution vs. Number of contributions
 
 This section aims to provide a visualization of the number of contributions.  The majority of contributions are clustered at the low end of the default graph, at 100 or less.  
-
 
 ```{r contribution amounts}
 ggplot(aes(x = contb_receipt_amt), data = contributions ) + 
@@ -108,6 +115,7 @@ ggplot(aes(x = contb_receipt_amt), data = contributions ) +
 ```
 
 By scaling the y-axis and setting the binwidth, there's better visibility to the details.
+
 ```{r improve contribution amounts}
 ggplot(aes(x = contb_receipt_amt), data = contributions) + 
   geom_histogram(binwidth = 25)+
@@ -116,6 +124,7 @@ ggplot(aes(x = contb_receipt_amt), data = contributions) +
 ```
 
 The above graph was further enhanced by using transformations on the x-axis.  The bottom graph here is an ideally distributed graph that provides a good level of detail for each magnitude of the data.
+
 ```{r contribution amounts transformations}
 p_n = ggplot(aes(x = contb_receipt_amt), data = contributions) + 
   geom_histogram(binwidth = 100)+
@@ -135,6 +144,7 @@ grid.arrange(p_n, p_sqrt, p_log10, ncol =1)
 ```
 
 After finding a good distribution of the data, the same plot was then split in to 5 separate plots, one for each political party.
+
 ```{r Political Party amount of contributions}
 
 ggplot(aes(x= log10(contb_receipt_amt)), data = contributions.combined) + 
@@ -217,10 +227,13 @@ contributions.by_party <- summarise(party_groups,
 ### Pairing variables in plots
 
 Here are pairwise plots for some of the key contribution information
+
 ```{r Pairing Plots }
 set.seed(1836)
-cont_subset <- contributions.combined[c("cand_nm", "contb_receipt_amt", "date", "pol_party", "gender")]
-cand_remaining <- factor(subset(contributions.by_cand, contrib_last > as.Date('2016-07-01'))$cand_nm)
+cont_subset <- contributions.combined[c(
+  "cand_nm", "contb_receipt_amt", "date", "pol_party", "gender")]
+cand_remaining <- factor(
+  subset(contributions.by_cand, contrib_last > as.Date('2016-07-01'))$cand_nm)
 cont_subset_cand <- subset(cont_subset,cand_nm %in% cand_remaining )
 cont_subset_cand$cand_nm <- factor (cont_subset_cand$cand_nm)
 #names(cont_subset)
@@ -230,9 +243,10 @@ ggpairs(cont_subset_cand[sample.int(nrow(cont_subset),2000), ])
 
 ### Contribution Totals per Political Party
 The total amount of the contributions per political party indicates that Democrats raised the highest amounts, followed by Republicans, and the other parties had little financial support from followers. 
+
 ```{r contribution sum per party}
 ggplot(aes(x = pol_party, y = contrib_sum), data = contributions.by_party) + 
-  geom_bar(stat = "identity")+ # theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  geom_bar(stat = "identity")+ 
   scale_y_sqrt()
 
 ```
@@ -240,16 +254,21 @@ ggplot(aes(x = pol_party, y = contrib_sum), data = contributions.by_party) +
 
 ### Contribution Totals per Candidate
 The total amount of the contributions per candidate shows that Clinton raised the most amount of money, while Donald Trump and Bernie Sanders raised similar amounts.  Although Clinton and Bernie had a closer number of donations, it appears Bernie's average was likely much lower than Clinton's and Trump's.  
+
 ```{r contribution sum per candidate}
 library(ggplot2)
-ggplot(aes(x = cand_nm, y = contrib_sum), data = contributions.by_cand) + 
-  geom_bar( stat="identity" )+ theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+ggplot(aes(x = reorder(cand_nm, contrib_sum), y = contrib_sum),
+       data = contributions.by_cand) + 
+  geom_bar( stat="identity" )+
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE)+
   scale_y_sqrt()
 
 ```
 
 ### Statistics for each candidate
 Simply display how many contributions and how much they were, for each candidate.
+
 ```{r Candidates}
 table(contributions$cand_nm)
 by(contributions$contb_receipt_amt, contributions$cand_nm, summary)
@@ -271,14 +290,17 @@ This graph is rather dense, and we can see that there are more contributions on 
 Here is a graph of the average contribution per day, followed by the number of contributions per day.  We can see here that early in the campaign period, the average contributions tended to be higher, while the number of donations was low. 
 
 ```{r Ave Contribution and Number of contributions over time}
-plot_date_mean <- ggplot(aes(x = date, y = contrib_mean), data = contributions.by_date) + 
+plot_date_mean <- ggplot(
+  aes(x = date, y = contrib_mean), data = contributions.by_date) + 
   geom_point() +
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
   scale_y_sqrt(limits = c(NA, 1500))
-plot_date_count <- ggplot(aes(x = date, y = n), data = contributions.by_date) + 
+
+plot_date_count <- ggplot(aes(x = date, y = n), data = contributions.by_date)+ 
   geom_point() +
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
   scale_y_sqrt()
+
 grid.arrange(plot_date_mean, plot_date_count, ncol=1)
 ```
 
@@ -286,10 +308,12 @@ grid.arrange(plot_date_mean, plot_date_count, ncol=1)
 The correlation test of the date and the amount of the contribution indicate that there is correlation.
 
 ```{r correlation of date and amount}
-cor.test(as.numeric(contributions$date),contributions$contb_receipt_amt,method = "pearson")
+cor.test(as.numeric(contributions$date),
+         contributions$contb_receipt_amt,method = "pearson")
 ```
 
 We can also see the relationship of contribution amount and date by looking at the average contribution over time.  
+
 ```{r contributions with average}
 ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) + 
   geom_jitter(alpha = 1/25, color = "orange")+
@@ -305,19 +329,26 @@ ggplot(aes(x = date, y = contb_receipt_amt), data = contributions) +
   geom_jitter(alpha = 1/25, color = "orange")+
   scale_y_log10()+
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
-  #geom_line(stat="summary", fun.y=mean)+
-  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.1), linetype=2, color="blue")+
-  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.9), linetype=2, color="blue")+
-  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.5), color="blue")
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.1), 
+            linetype=2, color="blue")+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.9), 
+            linetype=2, color="blue")+
+  geom_line(stat="summary", fun.y=quantile, fun.args=list(probs=0.5), 
+            color="blue")
+
 ```
 
 Another visualization of this data uses buckets of donation amounts to count how many donations there were in each range over time during the campaign.  With this chart, we can see that early in the campaign, the large and small contribution counts were actually pretty close to each other.  But then the number of the smaller donations rose over time.  
+
 ```{r contributions in each bucket over time}
-contributions$contb_receipt_amt.bucket <- cut (contributions$contb_receipt_amt, c(0, 25, 100, 1000, 2700))
+contributions$contb_receipt_amt.bucket <- 
+  cut (contributions$contb_receipt_amt, c(0, 25, 100, 1000, 2700))
 summary(contributions$contb_receipt_amt.bucket)
 
-ggplot(aes(x=date), data = subset(contributions, !is.na(contb_receipt_amt.bucket))) + 
-  geom_freqpoly(aes(color = contb_receipt_amt.bucket))+
+ggplot(aes(x=date), data = subset(contributions, 
+                                  !is.na(contb_receipt_amt.bucket))) + 
+  geom_freqpoly(aes(color = contb_receipt_amt.bucket), size = 1.5)+
+  scale_colour_brewer()+ theme_dark()+
   scale_y_sqrt()+
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
 ```
@@ -371,17 +402,22 @@ contributions.by_date_party <- contributions.combined %>%
 
 ### Donations to Democrats and Republicans
 The dense scatterplot of contributions over time in the previous section was for all political parties.  Here the democratic and republican contributions are separated.  The contributions to democrats appears to be denser.
+
 ```{r scatterplots of democrat and repulican contributions}
 plot_date_dem <- ggplot(aes(x = date, y = contb_receipt_amt),
-                        data = subset(contributions.combined, pol_party=="Democrat")) + 
+                        data = subset(contributions.combined, 
+                                      pol_party=="Democrat")) + 
   geom_point(color = 'blue', alpha = 1/25 ) +
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
   scale_y_sqrt(limits = c(NA, 2800))
+
 plot_date_rep <- ggplot(aes(x = date, y = contb_receipt_amt),
-                        data = subset(contributions.combined, pol_party=="Republican")) + 
+                        data = subset(contributions.combined, 
+                                      pol_party=="Republican")) + 
   geom_point(color = 'red' , alpha = 1/25) +
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
   scale_y_sqrt(limits = c(NA, 2800))
+
 grid.arrange(plot_date_dem, plot_date_rep, ncol=1)
 
 
@@ -389,8 +425,10 @@ grid.arrange(plot_date_dem, plot_date_rep, ncol=1)
 
 
 To get a better picture of how Republican and Democrat support changed over time, this chart shows the weekly number of contributions for both parties.
+
 ```{r Democrat and Republican Line}
-demnrep = subset(contributions.combined, pol_party == "Republican"| pol_party == "Democrat")
+demnrep = subset(contributions.combined, 
+                 pol_party == "Republican"| pol_party == "Democrat")
 #summary(hillndon)
 demnrep$pol_party <- factor (demnrep$pol_party)
 
@@ -405,43 +443,64 @@ ggplot(aes(x = date), data = demnrep) +
 ```{r date with columns for each political party sum}
 dates <- unique(contributions.by_date_party$date)
 contributions.by_date_for_party = data_frame(dates)
+
 contributions.by_date_for_party$Republican <- 
-  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
-                                            (subset(contributions.by_date_party,pol_party=='Republican'))$date)]
+  contributions.by_date_party$sum_cont[match(
+    contributions.by_date_for_party$dates,
+    (subset(contributions.by_date_party,pol_party=='Republican'))$date)]
+
 contributions.by_date_for_party$Democrat <- 
-  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
-                                            (subset(contributions.by_date_party,pol_party=='Democrat'))$date)]
+  contributions.by_date_party$sum_cont[match(
+    contributions.by_date_for_party$dates,
+    (subset(contributions.by_date_party,pol_party=='Democrat'))$date)]
+
 contributions.by_date_for_party$Green <- 
-  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
-                                            (subset(contributions.by_date_party,pol_party=='Green'))$date)]
+  contributions.by_date_party$sum_cont[match(
+    contributions.by_date_for_party$dates,
+    (subset(contributions.by_date_party,pol_party=='Green'))$date)]
+
 contributions.by_date_for_party$Independent <- 
-  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
-                                            (subset(contributions.by_date_party,pol_party=='Independent'))$date)]
-contributions.by_date_for_party$Libertarian <- 
-  contributions.by_date_party$sum_cont[match(contributions.by_date_for_party$dates,
-                                            (subset(contributions.by_date_party,pol_party=='Libertarian'))$date)]
+  contributions.by_date_party$sum_cont[match(
+    contributions.by_date_for_party$dates,
+    (subset(contributions.by_date_party,pol_party=='Independent'))$date)]
+
+contributions.by_date_for_party$Libertarian <-
+  contributions.by_date_party$sum_cont[match(
+    contributions.by_date_for_party$dates,
+    (subset(contributions.by_date_party,pol_party=='Libertarian'))$date)]
+
 contributions.by_date_for_party[is.na(contributions.by_date_for_party)] <- 0
+
 ```
 
 The ratio of contributions to Democrats to Republicans indicate that the monetary support for each party has not been heavily skewed to one side.
+
 ```{r graph dem rep ratio of contribution amoutns over time}
-ggplot(aes(x = dates, y = (Democrat-Republican)/(Democrat+Republican)), data = contributions.by_date_for_party)+
+ggplot(aes(x = dates, y = (Democrat-Republican)/(Democrat+Republican)),
+       data = contributions.by_date_for_party)+
   geom_line()+
   #scale_y_log10()+
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))+
   scale_y_continuous(limits = c(-1,1))+
   geom_hline(yintercept = 0, alpha = 0.2, linetype = 2)+
   geom_smooth(span=.2)
+
 ```
 
 
-To get a better idea of the contributions to each political party per day, this chart shows the daily sum of contributions to each political party.  
+To get a better idea of the contributions to each political party per day, this chart shows a smoothed trend of the daily sum of contributions to each political party.  
 
 ```{r scatterplot by date and political party}
-ggplot(aes(x = date, y = sum_cont), data = contributions.by_date_party)+
-  geom_point(aes(color=pol_party))+
-  #geom_smooth(aes(color=pol_party))+
-  scale_y_log10()+
+longdata <- melt(contributions.by_date_for_party, id.vars="dates")
+
+ggplot(aes(x = dates, y = value), data = longdata)+
+  #geom_line(aes(color = variable))+
+  #geom_smooth(aes(color=variable) , span = .2)+
+  geom_smooth(aes(color=variable), span=.1, method = "loess", se=FALSE)+
+         scale_colour_manual(
+           values = c("Republican"="Red", "Democrat"="Blue", "Green"="Green3",
+                      "Libertarian"="Orange", "Independent"="Purple")) + 
+  scale_y_sqrt()+
   scale_x_date(limits =  c(as.Date("2015-6-1"), NA))
 ```
 
@@ -450,8 +509,11 @@ ggplot(aes(x = date, y = sum_cont), data = contributions.by_date_party)+
 To find more detail on the contributions, this plot drills down on the two major candidates at race end, Clinton and Trump.  We can see that Clinton had steady support throughout the campaign, while Trump had a spike of support around the time of the Republican National Convention.^4^
 
 ```{r Clinton and Trump Line}
-hillndon = subset(contributions, cand_nm == "Clinton, Hillary Rodham"| cand_nm == "Trump, Donald J.")
+hillndon = subset(
+  contributions, 
+  cand_nm == "Clinton, Hillary Rodham"| cand_nm == "Trump, Donald J.")
 #summary(hillndon)
+
 hillndon$cand_nm <- factor (hillndon$cand_nm)
 
 ggplot(aes(x = date), data = hillndon) + 
@@ -459,12 +521,16 @@ ggplot(aes(x = date), data = hillndon) +
   scale_x_date(limits = c(as.Date("2015-6-1"), NA))+ 
   xlab('Timeline') + 
   ylab('Number of donations')
+
 ```
 
 ### ... And Bernie
 The Clinton and Trump line plot shows that before the summer of 2016, there was some support for Clinton and almost none for Trump.  I suspect that Bernie would have a strong presence during that time.  Here is the same chart, but including Bernie, confirming.
+
 ```{r Clinton and Trump and Bernie Line}
-hdb = subset(contributions, cand_nm == "Clinton, Hillary Rodham"| cand_nm == "Trump, Donald J." | cand_nm == "Sanders, Bernard")
+hdb = subset(contributions, cand_nm == "Clinton, Hillary Rodham"|
+               cand_nm == "Trump, Donald J." |
+               cand_nm == "Sanders, Bernard")
 hdb$cand_nm <- factor (hdb$cand_nm)
 
 ggplot(aes(x = date), data = hdb) + 
@@ -477,21 +543,49 @@ ggplot(aes(x = date), data = hdb) +
 We can see in the above plot that before the summer of 2016, Bernie's contributions from Michigan exceeded both Clinton's and Trump's. 
 
 The box plot below illustrates that the majority of Clinton's contribution amounts were over a smaller range than the majority of contributions made to Trump.  
+
 ```{r Clinton and Trump Box Plot}
 ggplot(aes(x = cand_nm, y = contb_receipt_amt), data = hdb) + 
   geom_boxplot() +
   coord_cartesian(ylim = c(0, 275))
 ```
+
 ```{r summary Clinton and Trum amounts}
+
 by(hdb$contb_receipt_amt, hdb$cand_nm, summary) 
+
 ```
 
 ### An overview of contributions for each candidate
 We can take a look at the sum of contributions daily per candidate over time for an overview of each candidate's support.
 
+```{r reduce list of candidates to 12 for meaningful facet wraps}
+
+#head(arrange(Forbes2000,desc(profits)), n = 50)
+
+otherRep = tail(arrange(
+  subset(cand_info.combined, pol_party == "Republican" ),
+  desc(n)), n = 13)$cand_nm
+
+otherRep = factor(otherRep)
+
+contributions.by_date_cand_12 = contributions.conts_by_date_cand
+contributions.by_date_cand_12$cand_nm = 
+  as.character(contributions.by_date_cand_12$cand_nm)
+
+contributions.by_date_cand_12$cand_nm[
+  contributions.by_date_cand_12$cand_nm %in% otherRep] = "Other Republicans"
+
+contributions.by_date_cand_12$cand_nm = 
+  as.factor(contributions.by_date_cand_12$cand_nm)
+
+```
+
 ```{r facet wrap for contributions per candidate}
+
 ggplot(aes(x=date, y = sum_cont), 
-       data = subset(contributions.conts_by_date_cand, date>= as.Date('2014-9-1')) )+
+       data = subset(contributions.by_date_cand_12,
+                     date>= as.Date('2014-9-1')))+
          facet_wrap(~cand_nm) +
          geom_point(alpha = .25) + 
          scale_y_continuous(limits = c(NA, 100000))+ 
@@ -500,10 +594,62 @@ ggplot(aes(x=date, y = sum_cont),
 
 ```
 
+### City Trends
+
+Political leanings are often inferred from demographics including region or location.  The contributor's city was included in the data set, and we can see what proportion of funds from each city was contributed to which party.  Here is a list of the cities with the top 10 number of contributions, and colored for the proportion of funds where blue would be democratic and red republican.
+
+```{r explore city political preferences}
+
+city_groups.combined <- group_by(contributions.combined,contbr_city)
+
+contributions.by_city.ratio <- summarise(city_groups.combined, 
+          contrib_mean = mean(contb_receipt_amt),
+          contrib_median = median(contb_receipt_amt),
+          contrib_sum = sum(contb_receipt_amt),
+          sum_rep = sum(contb_receipt_amt[pol_party=="Republican"]),
+          sum_dem = sum(contb_receipt_amt[pol_party=="Democrat"]),
+          dem_rep_total = sum(contb_receipt_amt[pol_party=="Republican"]) + sum(contb_receipt_amt[pol_party=="Democrat"]),
+          dem_rep_ratio = (
+            (sum(contb_receipt_amt[pol_party=="Republican"])) -
+              (sum(contb_receipt_amt[pol_party=="Democrat"]) ) ) /
+            ((sum(contb_receipt_amt[pol_party=="Republican"])) +
+               (sum(contb_receipt_amt[pol_party=="Democrat"]) )),
+          n = n())
+```
+
+
+
+```{r top 10 city names with political leaning and amount}
+
+contributions.by_city.top10 = 
+  head(arrange(contributions.by_city.ratio, desc(n)), n = 10)
+
+ggplot(aes(x = reorder(contbr_city, n), y = n),
+       data = contributions.by_city.top10) + 
+  geom_bar( stat="identity" , aes(fill = dem_rep_ratio))+
+  scale_fill_gradient(low="Blue", high = "Red", limits = c(-1,1))+
+  geom_text(aes(label=format(round(dem_rep_ratio, 2), nsmall = 2)), 
+            hjust=1.1, colour="black")+
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE)
+
+```
+  
+While there are too many cities to name, the trend of political leanings per city can be placed on a graph. 
+  
+```{r plot city political leanings}
+ggplot(
+  aes(x = dem_rep_ratio, y = dem_rep_total, size = n),
+  data = contributions.by_city.ratio) + 
+  geom_jitter(alpha = 1/5)+
+  scale_y_log10()
+```
+
+
 # Multivariate Analysis
 
 ### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
-This investigation compared support for political parties and specific candidates over time. 
+This investigation compared support for political parties and specific candidates over time. In general, there were more contributions to Democrats.  Contributions from each city were also explored, and the cities with the most contributions tended to be more Democrat.
 
 ### Were there any interesting or surprising interactions between features?
 The donations to Trump were significantly higher in average dollar amount than to Clinton.  During the dates of the national conventions, the number of contributions for these candidates rose sharply.  Before that time, Bernie Sanders had a large number of contributions, but his averages were low.
@@ -513,15 +659,30 @@ The donations to Trump were significantly higher in average dollar amount than t
 # Final Plots and Summary
 
 ### Plot One
+
 ```{r echo=FALSE, Plot_One}
 
-contributions.combined.by_month_cand <- subset(contributions.combined, date >= as.Date('2014-9-1')) %>%
+contributions.combined_12 = contributions.combined
+contributions.combined_12$cand_nm = 
+  as.character(contributions.combined_12$cand_nm)
+
+contributions.combined_12$cand_nm[
+  contributions.combined_12$cand_nm %in% otherRep] = "Other Republicans"
+
+contributions.combined_12$cand_nm = 
+  as.factor(contributions.combined_12$cand_nm)
+
+
+contributions.combined.by_month_cand <- subset(
+  contributions.combined_12, date >= as.Date('2014-9-1')) %>%
   group_by( month = strftime(date, "%Y/%m"), cand_nm, pol_party) %>%
   summarise(mean_cont = mean(contb_receipt_amt),
             median_cont = median(contb_receipt_amt),
             sum_cont = sum(contb_receipt_amt),
             n = n()) %>%
   ungroup() 
+
+
 
 #head(contributions.combined.by_month_cand)
 
@@ -530,13 +691,15 @@ ggplot(aes(x=month, y = sum_cont),
          facet_wrap(~cand_nm) +
          geom_point(alpha = .5, aes(color = pol_party)) +
          scale_y_sqrt(breaks = c(3000,200000,750000))+ 
-         scale_x_discrete(breaks = c('2015/01', '2015/07','2016/01', '2016/07'))+
+         scale_x_discrete(
+           breaks = c('2015/01', '2015/07','2016/01', '2016/07'))+
          theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-         scale_colour_manual(name="",  
-                      values = c("Republican"="Red", "Democrat"="Blue", "Green"="Green",
-                                 "Libertarian"="Orange", "Independent"="Purple")) + 
+         scale_colour_manual(
+           name="",  
+           values = c("Republican"="Red", "Democrat"="Blue", "Green"="Green3",
+                      "Libertarian"="Orange", "Independent"="Purple")) + 
          ggtitle("Monthly Contribution totals to candidate") +
-         labs (x = "Months", y = "Total Contributions (Dollars)") 
+         labs (x = "Months", y = "Total Contributions (USD)") 
   
          
 ```
@@ -545,6 +708,7 @@ ggplot(aes(x=month, y = sum_cont),
 The monthly contributions for candidate chart is used to visualize the support for each candidate over time.  The data was grouped to get monthly sums which were plotted against time.  Color was used to highlight the political party for each candidate.  We can see that Hillary and Bernie had strong support in the race, there were more Republican candidates than Democratic candidates, and that some candidates were active only for a short time early in the campaign.
 
 ### Plot Two
+
 ```{r echo=FALSE, Plot_Two}
 hillndon$cand_nm <- factor (hillndon$cand_nm)
 
@@ -559,68 +723,70 @@ hillndon.conts_by_date_cand <- hillndon %>%
   ungroup() %>%
   arrange(date)
 
-ggplot(aes(x = date, y = sum_cont), data = hillndon.conts_by_date_cand)+
+ggplot(aes(x = date, y = n), data = hillndon.conts_by_date_cand)+
   geom_line(aes(color= cand_nm) )+
   scale_color_discrete(name="Candidate")+
-  geom_smooth(aes(color=cand_nm), span=.5)+
-  scale_y_sqrt()+
-#(breaks = c(100,1000,10000,100000), labels = c(100,1000,10000,100000))+
+  geom_smooth(aes(color=cand_nm), span=.2)+
+  scale_y_log10(breaks = c(10, 100,1000), labels = c(10,100,1000))+
   ggtitle("Contributions by Date - Clinton and Trump") +
-  labs (x = "Timeline", y = "Total Contributions (Dollars)") 
+  labs (x = "Timeline", y = "Number of Contributions") 
 ```
 
 
 ### Description Two
+
 The sum of contributions over time for Clinton and Trump lets us compare their campaigns.  The financial support to Clinton's party was generally higher.  Trump did have spikes of support at the time of the Republican National convention and som large contribution campaigns at the end of the campain.  A smoothing function is used to show the trend over the noisy lines.
 
 ### Plot Three
+
 ```{r echo=FALSE, Plot_Three}
-
-city_groups.combined <- group_by(contributions.combined,contbr_city)
-
-contributions.by_city.ratio <- summarise(city_groups.combined, 
-          contrib_mean = mean(contb_receipt_amt),
-          contrib_median = median(contb_receipt_amt),
-          contrib_sum = sum(contb_receipt_amt),
-          sum_rep = sum(contb_receipt_amt[pol_party=="Republican"]),
-          sum_dem = sum(contb_receipt_amt[pol_party=="Democrat"]),
-          dem_rep_total = sum(contb_receipt_amt[pol_party=="Republican"]) + sum(contb_receipt_amt[pol_party=="Democrat"]),
-          dem_rep_ratio = ((sum(contb_receipt_amt[pol_party=="Republican"])) - (sum(contb_receipt_amt[pol_party=="Democrat"]) ) ) / ((sum(contb_receipt_amt[pol_party=="Republican"])) + (sum(contb_receipt_amt[pol_party=="Democrat"]) )),
-          n = n())
 
 
 #head(contributions.by_city.ratio)
 
-bottom_label <- paste(c(nrow(subset(contributions.by_city.ratio, dem_rep_ratio<0)),
-                        "Cities |", 
-                        nrow(subset(contributions.by_city.ratio, dem_rep_ratio>0)),
-                        "Cities"),
-                      collapse = " ")
+bottom_label <- paste(
+  c(nrow(subset(contributions.by_city.ratio,dem_rep_ratio<0)), "Cities |", 
+    nrow(subset(contributions.by_city.ratio, dem_rep_ratio>0)), "Cities"),
+  collapse = " ")
                       
-ggplot(aes(x = dem_rep_ratio, y = dem_rep_total, size = n, color = dem_rep_ratio), data = contributions.by_city.ratio) + 
+ggplot(
+  aes(x = dem_rep_ratio, y = dem_rep_total, size = n, color = dem_rep_ratio),
+  data = contributions.by_city.ratio) + 
   geom_jitter(alpha = 1/5)+
-  scale_x_continuous(labels = c("Democrat", "Majority Dem", "Neutral", "Majority Rep", "Republican"))+
-  scale_y_log10(breaks = c(0,10, 100, 1000,10000, 100000, 1000000), labels = c(0, 10,100, 1000,10000, 100000, 1000000) ) +
+  scale_x_continuous(
+    labels = c("Democrat", "Majority Dem", "Neutral", "Majority Rep", 
+               "Republican"))+
+  scale_y_log10(breaks = c(0,10, 100, 1000,10000, 100000, 1000000), 
+                labels = c(0, 10,100, 1000,10000, 100000, 1000000) ) +
   coord_cartesian(xlim = c(-1.1, 1.1) ) +
   scale_size(name = "# Contrib")+
   scale_colour_gradient(low="Blue", high = "Red", guide = FALSE)+
   ggtitle("Contribution Amounts by City") +
-  labs (x = bottom_label, y = "Total Contribution Amount") 
+  labs (x = bottom_label, y = "Total Contribution Amount (USD)") 
 ```
 
 
 ### Description Three
 
 The above graph has a node for each city.  The placement and color of the node indicate if the city was Democrat (Left, Blue) or Republican (Right, Red).  The node is placed low or high based on the total contribution amount from that city.  The size of the node indicates the number of contributions, and can be used go guage the size of the support base.  On the far left and far right of the graph, the blue line and red line show smaller towns or are caused by inconsistent city names.  The number of cities on the right side of the graph are much more than the number of cities on the left.  But the cities are generally smaller so the graph doesn't appear much denser on the right.  
+
 ```{r}
 #nothing
 ```
 
 # Reflection
 
+###Observations
 Exploring the publicly available data of contributions to presidential campaigns has revealed that Clinton and Bernie received the highest number of contributions, while the Republican party candidates were numerous and their support scattered.  As the presidential race drew on, Clinton and Trump were nominated as their party's candidates by primary elections throughout the nation. The donations to the Trump campaign were much higher on average than the contributions to Democrats. At the time of the Republican and Democrat National Conventions, the contributions spiked sharply up.  
 
+I have not been able to decipher a large support base for Trump from this data. while the total monetary support for Trump was pretty high, the number of people supporting him specifically, as well as all Republicans, was lower.  Using the number of contributions appears to be a better measure of voter support than the monetary amount of contributions, because everybody's vote is the same whether they have \$5 or \$500 or not a penny to give.  "The voting booth is the one place on earth where the least powerful and the most powerful are equal." - Gloria Steinem^5^
+
+###Challenges
+I found that the date is a useful parameter for making meaningful graphs, but there were some very early contributions that increased the timespan too much.  To overcome this, I filtered input to the graphs to be after June 1, 2015 so that the graphs would show time with a good level of activity.  Another challenge was that many Republican candidates diluted the data, but simply removing candidates with less contributions would eliminate visibility to the Green, Independent and Libertarian candidates. Subsetting and sorting the list of Republican candidates helped to provide a filter.  In general, there were wide ranges of values between candidates, and the smaller parties had contributions on a much smaller scale than the major parties.  To maintain visibility to the wide ranges, I often used log scales.
+
+###Additional Ideas
 While I did not look at the contributor names, an important step in improving the clarity of this data would be to group the contributions by contributor to get a measure of the support base, and to clean up any refunds.  It would also be interesting to see if a contributor supported more than one candidate.  Cleaning up the city names and adding geographic information would be helpful in visualizing support received from different areas.
 
-I have not been able to decipher a large support base for Trump from this data. while the total monetary support for Trump was pretty high, the number of people supporting him specifically, as well as all Republicans, was lower.  Using the number of contributions appears to be a better measure of voter support than the monetary amount of contributions, because everybody's vote is the same whether they have \$5 or \$500 or not a penny to give.  "The voting booth is the one place on earth where the least powerful and the most powerful are equal." - Gloria Steinem^5^
+An idea that I didn't pursue was to create monthly averages for each candidate, and compare months, because it would be interesting to see which candidates were on top in Michigan month by month of the race.  
+
 
